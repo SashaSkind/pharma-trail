@@ -1,0 +1,18 @@
+# Data — large federal CSVs, never commit
+data/
+*.csv
+*.csv.gz
+*.zip
+
+# Secrets / connection strings
+.env
+*.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
