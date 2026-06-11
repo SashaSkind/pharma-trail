@@ -14,7 +14,7 @@ CREATE TABLE rx.drug_map
     gnrc_name String,
     match_on  Enum8('brand' = 1, 'generic' = 2)
 )
-ENGINE = TinyLog;
+ENGINE = MergeTree ORDER BY drug_key;   -- TinyLog is rejected on ClickHouse Cloud (Shared DB)
 
 INSERT INTO rx.drug_map VALUES
     ('Eliquis',   'ELIQUIS', 'APIXABAN',      'brand'),
