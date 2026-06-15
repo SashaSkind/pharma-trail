@@ -43,22 +43,31 @@ a portfolio.
 
 ---
 
-## 3. Architecture
+## 3. Architecture (hybrid: durable core + live-OLAP showpiece)
 
 ```
   Browser
-     │  (search, doctor page)
-     ▼
+     │  search / doctor page                 │  Explore page (live filters)
+     ▼                                        ▼
   Vercel — Next.js (App Router, TypeScript)
-     │  API routes: /api/search, /api/doctor/[npi], /api/similar
-     ▼
-  Neon — serverless Postgres (4 tables, pg_trgm name search)
-     ▲
-     │  one-time load (scripts/load_neon.py)
-  data/web/*.csv  ◄── build_doctor_db.py ◄── Part D JSONs + OP CSV (on disk)
+     │  /api/search /api/doctor /api/similar  │  /api/explore
+     ▼                                        ▼
+  Neon — Postgres (durable, free, forever)   ClickHouse Cloud (live ad-hoc aggregation)
+     ▲                                        ▲ raw rows: partd_raw, payments_raw,
+     │ one-time load (load_neon.py)           │ rx_by_npi_drug, pay_by_npi_drug
+  data/web/*.csv ◄ build_doctor_db.py ◄ Part D JSONs + OP CSV (on disk)
 ```
 
-No live dependency on ClickHouse. The pipeline that *builds* the data runs once, locally.
+**Two backends, on purpose:**
+- **Neon** serves the per-doctor pages (precomputed, indexed) — never breaks, never expires.
+- **ClickHouse Cloud** powers ONE live-aggregation "Explore" page (the showpiece) — drag
+  filters, watch it crunch ~1.5M rows in milliseconds.
+
+**Durability of the Explore page is deliberately deferred** (chosen: "Cloud now, decide
+later"). Built against the current ClickHouse Cloud so it works today and demos great; if the
+trial lapses, only the Explore page degrades — the core app stays fully up on Neon. Record a
+demo video while the trial is live. Later durability options: pay (Cloud), self-host (~$5/mo
+VPS), or embed via `chDB`/`clickhouse-local` (free, permanent).
 
 ---
 
@@ -171,6 +180,24 @@ Loaded via `scripts/load_neon.py` (psycopg2 `COPY`, reads `NEON_DATABASE_URL` fr
 └──────────────────────────────────────────────┘
 ```
 
+### `/explore` — live ClickHouse aggregation (the showpiece)
+```
+┌──────────────────────────────────────────────┐
+│  Explore the data        ⚡ 1,488,058 rows · 31ms│  ← live latency/row badge
+│  Drug [Eliquis ▾]  Specialty [Cardiology ▾]    │
+│  State [All ▾]  Payment $ [▮▮▮▮──] 0–10k        │  ← sliders/dropdowns;每change re-queries
+│  Min claims [ 30 ]                              │
+│  ─────────────────────────────────────────────│
+│  [ live bar chart: avg claims by payment band ]│  ← recomputed on the raw rows each change
+│                                                │
+│  Paid vs unpaid (current filter): 147 vs 70    │
+│  Prescribers in view: 38,204                   │
+└──────────────────────────────────────────────┘
+```
+Every control change fires `/api/explore` → a parameterized ClickHouse `GROUP BY` over the raw
+rows. The badge prints rows-scanned + query ms (straight from ClickHouse `X-ClickHouse-Summary`
+/ `query_log`) to show off the speed. This is the one page that needs a live ClickHouse.
+
 ---
 
 ## 7. API contracts
@@ -188,9 +215,18 @@ GET /api/similar?npi=<npi>&drug=<key>    → {
                                              alternatives: [{npi,name,city,claims,pay_amount,
                                                              pct_vs_unpaid}]   (same specialty+drug,
                                              }                                  ordered pay_amount ASC)
+
+# --- the live-OLAP showpiece (ClickHouse, not Neon) ---
+GET /api/explore?drug=&specialty=&state=&pay_min=&pay_max=&min_clms=
+                                         → {
+                                             bands: [{pay_band, n, avg_claims}],   # for the chart
+                                             paid_avg, unpaid_avg, n_prescribers,
+                                             rows_scanned, elapsed_ms             # for the speed badge
+                                           }
 ```
 
-DB driver: `@neondatabase/serverless` (HTTP, ideal for Vercel functions). Parameterized queries.
+DB drivers: Neon via `@neondatabase/serverless` (HTTP, ideal for Vercel). ClickHouse via
+`@clickhouse/client` (or plain fetch to the HTTPS:8443 endpoint). All queries parameterized.
 
 ---
 
@@ -215,13 +251,16 @@ DB driver: `@neondatabase/serverless` (HTTP, ideal for Vercel functions). Parame
 | 2 | `build_doctor_db.py` → `data/web/*.csv` (+ specialty tweak) | me |
 | 3 | Create free **Neon** project → copy connection string → paste into `.env` as `NEON_DATABASE_URL` | **you** |
 | 4 | `load_neon.py` → create schema + COPY CSVs | me |
-| 5 | Scaffold Next.js app in `web/` (pages + API + `@neondatabase/serverless`) | me |
-| 6 | Test locally (`npm run dev`) against Neon | me |
-| 7 | Push repo; create **Vercel** project, root dir = `web/`, set env `NEON_DATABASE_URL`, deploy | **you** (I can do via Vercel CLI if you log in) |
-| 8 | (optional) custom domain | you |
+| 5 | Scaffold Next.js app in `web/` — search/doctor/similar pages + Neon APIs | me |
+| 6 | Add the **/explore page + /api/explore** (ClickHouse live aggregation) | me |
+| 7 | Set ClickHouse IP Access List to **allow-anywhere** (Vercel egress IPs vary) | **you** |
+| 8 | Test locally (`npm run dev`) against Neon + ClickHouse | me |
+| 9 | Push repo; create **Vercel** project, root dir = `web/`, set env `NEON_DATABASE_URL` + `CH_*`, deploy | **you** (I can do via Vercel CLI if you log in) |
+| 10 | **Record a demo video** of the Explore page while the CH trial is live | you |
+| 11 | (optional) custom domain | you |
 
-`web/` lives in this same repo (Vercel root dir = `web/`). `.env` stays gitignored;
-`NEON_DATABASE_URL` is set as a Vercel env var, not committed.
+`web/` lives in this same repo (Vercel root dir = `web/`). `.env` stays gitignored; secrets
+(`NEON_DATABASE_URL`, `CH_HOST/USER/PASSWORD`) are set as Vercel env vars, not committed.
 
 ---
 
@@ -241,7 +280,29 @@ DB driver: `@neondatabase/serverless` (HTTP, ideal for Vercel functions). Parame
 
 ## 11. Stack summary
 
-- **Frontend/SSR:** Next.js (App Router) + TypeScript + Tailwind; Recharts for the per-doctor bar.
-- **DB:** Neon Postgres, `@neondatabase/serverless` driver.
+- **Frontend/SSR:** Next.js (App Router) + TypeScript + Tailwind; Recharts for charts.
+- **DBs:** Neon Postgres (`@neondatabase/serverless`) for the durable core; ClickHouse Cloud
+  (`@clickhouse/client`) for the live `/explore` page.
 - **Data prep:** Python (`build_doctor_db.py`, `load_neon.py`) — reuses files on disk.
 - **Host:** Vercel Hobby (free).
+
+## 12. Live-explorer queries (sketch)
+
+The `/api/explore` handler runs the `04_analyses.sql` dose-response query with filters injected:
+
+```sql
+SELECT multiIf(p.pay_amount=0 OR p.pay_amount IS NULL,'0 $0',
+               p.pay_amount<100,'1 <$100', p.pay_amount<1000,'2 $100-1k',
+               p.pay_amount<10000,'3 $1k-10k','4 $10k+') AS pay_band,
+       count() AS n, round(avg(r.clms),1) AS avg_claims
+FROM rx.rx_by_npi_drug r
+LEFT JOIN rx.pay_by_npi_drug p USING (drug_key, npi)
+WHERE r.drug_key = {drug:String}
+  AND ({spec:String} = '' OR r.specialty = {spec:String})
+  AND r.clms >= {min_clms:UInt32}
+  AND ifNull(p.pay_amount,0) BETWEEN {pay_min:Float64} AND {pay_max:Float64}
+GROUP BY pay_band ORDER BY pay_band
+```
+
+Uses ClickHouse **parameterized queries** (`{name:Type}`) — safe, no string-building. Read
+`rows_read` + `elapsed` from the response summary for the speed badge.
