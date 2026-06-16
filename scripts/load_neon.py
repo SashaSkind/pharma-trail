@@ -66,7 +66,9 @@ CREATE INDEX idx_doctors_specialty ON doctors (specialty);
 ALTER TABLE doctor_drug ADD PRIMARY KEY (npi, drug_key);
 CREATE INDEX idx_dd_similar ON doctor_drug (drug_key, specialty, pay_amount);
 CREATE INDEX idx_ddm ON doctor_drug_mfr (npi, drug_key);
-ALTER TABLE peer_benchmark ADD PRIMARY KEY (specialty, drug_key);
+-- peer_benchmark is reference-only (its values are precomputed into doctor_drug); some rows
+-- have empty specialty, so no PK. A plain index is enough.
+CREATE INDEX idx_peer ON peer_benchmark (drug_key, specialty);
 ANALYZE;
 """
 

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Pharma Trail — follow the money from drug makers to prescribers",
   description:
     "Search any US prescriber and see their pharma payments alongside their Medicare Part D prescribing — public CMS data.",
+  icons: { icon: "/logo.png", apple: "/logo.png" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -14,7 +15,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <header style={{ borderBottom: "1px solid var(--border)" }}>
           <div className="container" style={{ display: "flex", alignItems: "center", gap: 20, height: 58 }}>
-            <Link href="/" style={{ fontWeight: 700 }}>💊 Pharma Trail</Link>
+            <Link href="/" style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 9 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Pharma Trail" width={30} height={30} style={{ borderRadius: "50%" }} />
+              Pharma Trail
+            </Link>
             <nav style={{ display: "flex", gap: 16, marginLeft: "auto", fontSize: 14 }} className="muted">
               <Link href="/">Search</Link>
               <Link href="/explore">Explore</Link>
