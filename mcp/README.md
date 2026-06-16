@@ -5,7 +5,12 @@ claude.ai web) to the Pharma Trail ClickHouse dataset by URL — no credentials 
 
 It runs the official `mcp-clickhouse` server bridged to **Streamable HTTP** at `/mcp` (via
 [supergateway](https://github.com/supercorp-ai/supergateway)), connecting to ClickHouse as the
-read-only `webapp` user. **Verified end-to-end locally** (initialize → tools/list → query).
+read-only `webapp` user.
+
+**🟢 Live (Cloud Run):** `https://pharma-mcp-1064429920602.us-central1.run.app/mcp`
+— verified end-to-end (initialize → tools/list → run_query) against the public URL.
+(Note: `/healthz` returns a Google 404 on Cloud Run — cosmetic; verify by connecting Claude and
+asking a question, or with an MCP `initialize` POST to `/mcp`.)
 
 ```
 Claude (web / desktop / code) ──HTTPS──► your host (/mcp) ──► mcp-clickhouse ──► ClickHouse (webapp, rx)
