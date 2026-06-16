@@ -1,4 +1,4 @@
-export const metadata = { title: "About the method — Is My Doctor Paid?" };
+export const metadata = { title: "About the method — Pharma Trail" };
 
 export default function About() {
   return (

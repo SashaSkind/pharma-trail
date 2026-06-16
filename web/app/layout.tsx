@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Is My Doctor Paid? — payments vs prescribing",
+  title: "Pharma Trail — follow the money from drug makers to prescribers",
   description:
     "Search any US prescriber and see their pharma payments alongside their Medicare Part D prescribing — public CMS data.",
 };
@@ -14,7 +14,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <header style={{ borderBottom: "1px solid var(--border)" }}>
           <div className="container" style={{ display: "flex", alignItems: "center", gap: 20, height: 58 }}>
-            <Link href="/" style={{ fontWeight: 700 }}>💊 Is My Doctor Paid?</Link>
+            <Link href="/" style={{ fontWeight: 700 }}>💊 Pharma Trail</Link>
             <nav style={{ display: "flex", gap: 16, marginLeft: "auto", fontSize: 14 }} className="muted">
               <Link href="/">Search</Link>
               <Link href="/explore">Explore</Link>
