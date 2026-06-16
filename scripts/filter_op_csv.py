@@ -19,8 +19,8 @@ import clickhouse_connect
 csv.field_size_limit(1 << 24)
 
 BRANDS = {"ELIQUIS", "XARELTO", "HUMIRA", "OZEMPIC"}   # metformin is control: no payments
-OP_CSV = os.environ.get("OP_CSV", "data/op_gnrl_2023.csv")
-YEAR = 2023
+OP_CSV = os.environ.get("OP_CSV", "data/op_gnrl_2024.csv")
+YEAR = 2024
 BATCH = 50000
 
 NEEDED = {

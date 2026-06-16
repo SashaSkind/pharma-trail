@@ -25,10 +25,11 @@ import requests
 import clickhouse_connect
 
 # ── config ────────────────────────────────────────────────────────────────────
-PARTD_URL = "https://data.cms.gov/data-api/v1/dataset/e54db557-cd82-4e91-a0fe-61aad5865d69/data"
-OP_DS     = "fb3a65aa-c901-4a38-a813-b04b00dfa2a9"
+# 2024 program year (latest where both datasets exist). 2023 ids kept in git history.
+PARTD_URL = "https://data.cms.gov/data-api/v1/dataset/9552739e-3d05-4c1b-8eff-ecabf391e2e5/data"
+OP_DS     = "e6b17c6a-2534-4207-a4a1-6746a14911ff"
 OP_URL    = f"https://openpaymentsdata.cms.gov/api/1/datastore/query/{OP_DS}/0"
-YEAR      = 2023
+YEAR      = 2024
 DATA_DIR  = "data"
 
 # branded drugs match on Brnd_Name (Part D) / product cols (OP); metformin on Gnrc_Name only.

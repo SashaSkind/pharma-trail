@@ -129,13 +129,13 @@ def main():
                         round(tot_pay.get(npi,0),2), tot_clms.get(npi,0)])
 
     with open(f"{OUT}/doctor_drug.csv", "w", newline="") as o:
-        w = csv.writer(o); w.writerow(["npi","drug_key","claims","cost","benes",
+        w = csv.writer(o); w.writerow(["npi","drug_key","specialty","claims","cost","benes",
                                        "pay_amount","pay_count","peer_unpaid_avg","pct_vs_unpaid"])
         for (npi, key), a in dd.items():
             p = pay.get((npi, key), [0.0, 0]); spec = doctors[npi]["specialty"]
             base = peer_unpaid_avg.get((spec, key), 0.0)
             pct = round((a[0] - base) / base * 100, 1) if base else None
-            w.writerow([npi, key, a[0], round(a[1],2), a[2], round(p[0],2), p[1],
+            w.writerow([npi, key, spec, a[0], round(a[1],2), a[2], round(p[0],2), p[1],
                         round(base,1), pct if pct is not None else ""])
 
     with open(f"{OUT}/doctor_drug_mfr.csv", "w", newline="") as o:
