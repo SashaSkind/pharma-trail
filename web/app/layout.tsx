@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "Pharma Trail — follow the money from drug makers to prescribers",
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </div>
         </header>
         <main className="container" style={{ paddingTop: 28, paddingBottom: 60, minHeight: "70vh" }}>
-          {children}
+          <Providers>{children}</Providers>
         </main>
         <footer style={{ borderTop: "1px solid var(--border)", padding: "18px 0" }}>
           <div className="container muted" style={{ fontSize: 12, lineHeight: 1.6 }}>

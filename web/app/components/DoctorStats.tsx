@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import BiasChart from "./BiasChart";
 import PaymentScatter from "./PaymentScatter";
 import { DRUG_META } from "@/lib/drugs";
@@ -24,14 +24,13 @@ const money = (n: number) => `$${Math.round(n).toLocaleString()}`;
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
 export default function DoctorStats({ npi, specialty }: { npi: number; specialty: string | null }) {
-  // SWR: caches by NPI, treats data fresh for 10 min → instant on re-open (per user).
-  const { data, isLoading } = useSWR<Stats>(`/api/doctor/${npi}/stats`, fetcher, {
-    dedupingInterval: 600_000,
-    revalidateOnFocus: false,
-    keepPreviousData: true,
+  // TanStack Query: caches by ['doctor', npi], staleTime 10 min → instant on re-open (per user).
+  const { data, isPending } = useQuery<Stats>({
+    queryKey: ["doctor", npi],
+    queryFn: () => fetcher(`/api/doctor/${npi}/stats`),
   });
 
-  if (isLoading || !data) return <StatsSkeleton />;
+  if (isPending || !data) return <StatsSkeleton />;
   if (data.error) return <div className="panel" style={{ padding: 18 }}>Couldn’t load stats. Try again.</div>;
 
   const { drugs, manufacturers, similar, payments, primary } = data;
