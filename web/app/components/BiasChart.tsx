@@ -1,5 +1,5 @@
 "use client";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 type Row = { drug_key: string; claims: number; peer_unpaid_avg: number | null };
 
@@ -23,12 +23,8 @@ export default function BiasChart({ rows }: { rows: Row[] }) {
             cursor={{ fill: "rgba(255,255,255,0.04)" }}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="This doctor" radius={[0, 4, 4, 0]}>
-            {data.map((_, i) => <Cell key={i} fill="#4f9dff" />)}
-          </Bar>
-          <Bar dataKey="Unpaid peer avg" radius={[0, 4, 4, 0]}>
-            {data.map((_, i) => <Cell key={i} fill="#5ec8a0" />)}
-          </Bar>
+          <Bar dataKey="This doctor" fill="#4f9dff" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="Unpaid peer avg" fill="#5ec8a0" radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
