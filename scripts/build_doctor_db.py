@@ -23,9 +23,15 @@ csv.field_size_limit(1 << 24)
 DATA, OUT = "data", "data/web"
 OP_CSV = os.environ.get("OP_CSV", os.path.join(DATA, "op_gnrl_2024.csv"))
 
-BRAND_KEYS = {"ELIQUIS": "Eliquis", "XARELTO": "Xarelto", "HUMIRA": "Humira", "OZEMPIC": "Ozempic",
-              "JARDIANCE": "Jardiance", "MOUNJARO": "Mounjaro", "FARXIGA": "Farxiga",
-              "DUPIXENT": "Dupixent", "REPATHA": "Repatha"}
+# drug list from the single source of truth (drug_map.csv).
+# BRAND_KEYS: first-token brand -> drug_key; GENERIC_KEYS: generic -> drug_key.
+BRAND_KEYS, GENERIC_KEYS = {}, {}
+for _r in csv.DictReader(open(os.path.join(OUT, "drug_map.csv"))):
+    if _r["match_on"] == "brand" and _r["brnd_name"]:
+        BRAND_KEYS[_r["brnd_name"].upper()] = _r["drug_key"]
+    elif _r["match_on"] == "generic" and _r["gnrc_name"]:
+        GENERIC_KEYS[_r["gnrc_name"].upper()] = _r["drug_key"]
+def tok(s): s = (s or "").strip().upper(); return s.split(" ")[0] if s else ""
 _money = re.compile(r"[^0-9.\-]")
 
 def f(s):
@@ -39,14 +45,10 @@ def i(s):
     try: return int(float(s))
     except (ValueError, TypeError): return 0
 
-# Drugs matched on generic name (device-suffixed brands in Part D + the metformin control).
-GENERIC_KEYS = {"DUPILUMAB": "Dupixent", "EVOLOCUMAB": "Repatha", "METFORMIN HCL": "Metformin"}
-
 def partd_key(brnd, gnrc):
-    bn = (brnd or "").upper(); gn = (gnrc or "").upper()
-    if bn in BRAND_KEYS: return BRAND_KEYS[bn]
-    if gn in GENERIC_KEYS: return GENERIC_KEYS[gn]
-    return None
+    k = BRAND_KEYS.get(tok(brnd))      # first-token brand (collapses "Dupixent Pen" -> Dupixent)
+    if k: return k
+    return GENERIC_KEYS.get((gnrc or "").upper())
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -55,28 +57,29 @@ def main():
     pay = defaultdict(lambda: [0.0, 0])   # (npi,drug) -> [amount, count]
     mfr = defaultdict(lambda: [0.0, 0])   # (npi,drug,manufacturer) -> [amount, n]
 
-    # ── Part D: prescribing + names ──────────────────────────────────────────
-    for path in sorted(glob.glob(os.path.join(DATA, "partd_*.json"))):
-        print(f"   reading {os.path.basename(path)} ...", flush=True)
-        rows = json.load(open(path))
-        for r in rows:
-            key = partd_key(r.get("Brnd_Name"), r.get("Gnrc_Name"))
+    # ── Part D: prescribing + names (stream the full 2024 file) ───────────────
+    PARTD_CSV = os.environ.get("PARTD_CSV", os.path.join(DATA, "partd_full_2024.csv"))
+    with open(PARTD_CSV, newline="", encoding="utf-8", errors="replace") as fh:
+        rd = csv.reader(fh); H = {n: k for k, n in enumerate(next(rd))}
+        P_NPI, P_TYP, P_BN, P_GN = H["Prscrbr_NPI"], H["Prscrbr_Type"], H["Brnd_Name"], H["Gnrc_Name"]
+        P_FN, P_LN = H["Prscrbr_First_Name"], H["Prscrbr_Last_Org_Name"]
+        P_CITY, P_ST = H["Prscrbr_City"], H["Prscrbr_State_Abrvtn"]
+        P_TC, P_TB, P_TD = H["Tot_Clms"], H["Tot_Benes"], H["Tot_Drug_Cst"]
+        nscan = 0
+        for r in rd:
+            nscan += 1
+            if nscan % 5_000_000 == 0: print(f"   Part D scanned {nscan:,} ...", flush=True)
+            key = partd_key(r[P_BN], r[P_GN])
             if not key: continue
-            npi = i(r.get("Prscrbr_NPI"))
+            npi = i(r[P_NPI])
             if not npi: continue
-            first = (r.get("Prscrbr_First_Name") or "").strip()
-            last  = (r.get("Prscrbr_Last_Org_Name") or "").strip()
-            name  = (f"{first} {last}".strip() if first else last) or f"NPI {npi}"
             if npi not in doctors:
-                doctors[npi] = {
-                    "name": name,
-                    "specialty": (r.get("Prscrbr_Type") or "").strip(),
-                    "city": (r.get("Prscrbr_City") or "").strip(),
-                    "state": (r.get("Prscrbr_State_Abrvtn") or "").strip(),
-                }
+                first = (r[P_FN] or "").strip(); last = (r[P_LN] or "").strip()
+                doctors[npi] = {"name": (f"{first} {last}".strip() if first else last) or f"NPI {npi}",
+                                "specialty": (r[P_TYP] or "").strip(),
+                                "city": (r[P_CITY] or "").strip(), "state": (r[P_ST] or "").strip()}
             a = dd[(npi, key)]
-            a[0] += i(r.get("Tot_Clms")); a[1] += f(r.get("Tot_Drug_Cst")); a[2] += i(r.get("Tot_Benes"))
-        del rows
+            a[0] += i(r[P_TC]); a[1] += f(r[P_TD]); a[2] += i(r[P_TB])
     print(f"   Part D: {len(doctors):,} doctors, {len(dd):,} doctor-drug rows", flush=True)
 
     # ── Open Payments: payments + manufacturers ──────────────────────────────
@@ -93,8 +96,8 @@ def main():
         for row in rd:
             scanned += 1
             if scanned % 2_000_000 == 0: print(f"   OP scanned {scanned:,} ...", flush=True)
-            keys = {BRAND_KEYS[row[d].strip().upper()] for d in di
-                    if d < len(row) and row[d].strip().upper() in BRAND_KEYS}
+            keys = {BRAND_KEYS[tok(row[d])] for d in di
+                    if d < len(row) and tok(row[d]) in BRAND_KEYS}
             if not keys: continue
             rtype = row[c_type]
             if not ("physician" in rtype.lower() or "practitioner" in rtype.lower()): continue

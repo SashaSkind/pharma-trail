@@ -16,7 +16,7 @@ export default function Home() {
       <SearchBox />
 
       <div style={{ display: "flex", gap: 16, marginTop: 36, flexWrap: "wrap" }}>
-        <Feature title="See the payments" body="How much, from which manufacturer, for which drug — Eliquis, Xarelto, Ozempic, Humira." />
+        <Feature title="See the payments" body="How much, from which manufacturer, for which drug — across 50 top branded drugs (diabetes, immunology, psychiatry, cardiology & more)." />
         <Feature title="See the prescribing gap" body="Claims vs the average unpaid prescriber in the same specialty." />
         <Feature title="Compare alternatives" body="Other in-specialty prescribers and their payment transparency." />
       </div>

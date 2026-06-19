@@ -18,8 +18,10 @@ import clickhouse_connect
 
 csv.field_size_limit(1 << 24)
 
-BRANDS = {"ELIQUIS", "XARELTO", "HUMIRA", "OZEMPIC",
-          "JARDIANCE", "MOUNJARO", "FARXIGA", "DUPIXENT", "REPATHA"}   # metformin is control: no payments
+# branded drugs (first-token of brand name) from the single source of truth.
+BRANDS = {row["brnd_name"].upper() for row in csv.DictReader(open("data/web/drug_map.csv"))
+          if row["match_on"] == "brand" and row["brnd_name"]}
+def tok(s): s = (s or "").strip().upper(); return s.split(" ")[0] if s else ""
 OP_CSV = os.environ.get("OP_CSV", "data/op_gnrl_2024.csv")
 YEAR = 2024
 BATCH = 25000
@@ -116,8 +118,8 @@ def main():
         scanned += 1
         if scanned % 1_000_000 == 0:
             print(f"   scanned {scanned:,} ... kept {kept:,}", flush=True)
-        # drug match across the 5 product cols
-        if not any((row[i].strip().upper() in BRANDS) for i in di if i < len(row)):
+        # drug match across the 5 product cols (first-token of brand)
+        if not any((tok(row[i]) in BRANDS) for i in di if i < len(row)):
             continue
         rtype = row[ix["recipient"]]
         if not ("physician" in rtype.lower() or "practitioner" in rtype.lower()):
@@ -141,15 +143,7 @@ def main():
 
     total = c.query("SELECT count() FROM rx.payments_raw").result_rows[0][0]
     print(f"\n   scanned {scanned:,} rows, kept {kept:,}")
-    print(f"   rx.payments_raw now has {total:,} rows")
-    print("   by brand present:")
-    for r in c.query("""
-        SELECT brand, count() n, round(sum(amount)) paid FROM (
-          SELECT amount, arrayJoin(['ELIQUIS','XARELTO','HUMIRA','OZEMPIC','JARDIANCE','MOUNJARO','FARXIGA','DUPIXENT','REPATHA']) brand,
-                 arrayMap(x->upper(x),[drug1,drug2,drug3,drug4,drug5]) ds
-          FROM rx.payments_raw)
-        WHERE has(ds,brand) GROUP BY brand ORDER BY n DESC""").result_rows:
-        print(f"     {r[0]:10} payments={r[1]:>7,}  total_paid=${r[2]:,.0f}")
+    print(f"   rx.payments_raw now has {total:,} rows ({len(BRANDS)} branded drugs)")
 
 if __name__ == "__main__":
     main()

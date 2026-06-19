@@ -25,7 +25,7 @@ def main():
       SELECT m.drug_key AS drug_key, p.npi AS npi, any(p.specialty) AS specialty,
              sum(p.tot_clms) AS clms, sum(p.tot_drug_cst) AS drug_cst, sum(p.tot_benes) AS benes
       FROM rx.partd_raw p INNER JOIN rx.drug_map m
-        ON (m.match_on='brand'   AND upper(p.brnd_name)=m.brnd_name)
+        ON (m.match_on='brand'   AND splitByChar(' ', upper(p.brnd_name))[1]=m.brnd_name)
         OR (m.match_on='generic' AND upper(p.gnrc_name)=m.gnrc_name)
       WHERE p.npi!=0 AND p.year={year}
       GROUP BY drug_key, npi""")
@@ -34,8 +34,8 @@ def main():
     c.command(f"""CREATE TABLE rx.pay_by_npi_drug ENGINE=MergeTree ORDER BY (drug_key,npi) AS
       SELECT m.drug_key AS drug_key, pay.npi AS npi, sum(pay.amount) AS pay_amount, count() AS pay_count
       FROM rx.payments_raw pay INNER JOIN rx.drug_map m
-        ON m.brnd_name!='' AND (upper(pay.drug1)=m.brnd_name OR upper(pay.drug2)=m.brnd_name
-          OR upper(pay.drug3)=m.brnd_name OR upper(pay.drug4)=m.brnd_name OR upper(pay.drug5)=m.brnd_name)
+        ON m.brnd_name!='' AND (splitByChar(' ', upper(pay.drug1))[1]=m.brnd_name OR splitByChar(' ', upper(pay.drug2))[1]=m.brnd_name
+          OR splitByChar(' ', upper(pay.drug3))[1]=m.brnd_name OR splitByChar(' ', upper(pay.drug4))[1]=m.brnd_name OR splitByChar(' ', upper(pay.drug5))[1]=m.brnd_name)
       WHERE pay.npi!=0 AND pay.program_year={year}
       GROUP BY drug_key, npi""")
 
