@@ -98,11 +98,11 @@ export default function DoctorStats({ npi, specialty }: { npi: number; specialty
         <div className="panel" style={{ padding: 18 }}>
           <div style={{ fontWeight: 700, marginBottom: 2 }}>Other {specialty} prescribers of {primary}</div>
           <div className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
-            Sorted by least industry money first — for transparency, not a recommendation to switch.
+            Sorted by least <b>total</b> industry money first (across all drugs) — for transparency, not a recommendation to switch.
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 0.8fr 0.9fr", gap: 6, fontSize: 14 }}>
             <div className="muted">Name</div><div className="muted">City</div>
-            <div className="muted">Claims</div><div className="muted">Paid?</div>
+            <div className="muted">Claims</div><div className="muted">Total paid?</div>
             {similar.map((s) => {
               const city = [s.city, s.state].filter(Boolean).join(", ");
               const pay = num(s.pay_amount);

@@ -69,11 +69,13 @@ export async function getDoctor(npi: number) {
 }
 
 // Other doctors in the same specialty who prescribe the same drug — least paid first.
+// "Paid?" uses the doctor's TOTAL payments across all drugs (d.total_pay), not just this drug, so
+// a doctor paid for OTHER drugs isn't shown as unpaid (matches their own page's headline).
 export async function getSimilar(specialty: string, drug: string, excludeNpi: number, limit = 12) {
   return (await sql`
-    SELECT d.npi, d.name, d.city, d.state, dd.claims, dd.pay_amount, dd.pct_vs_unpaid
+    SELECT d.npi, d.name, d.city, d.state, dd.claims, d.total_pay AS pay_amount, dd.pct_vs_unpaid
     FROM doctor_drug dd JOIN doctors d USING (npi)
     WHERE dd.drug_key = ${drug} AND dd.specialty = ${specialty} AND dd.npi <> ${excludeNpi}
-    ORDER BY dd.pay_amount ASC, dd.claims DESC
+    ORDER BY d.total_pay ASC NULLS FIRST, dd.claims DESC
     LIMIT ${limit}`) as SimilarRow[];
 }
