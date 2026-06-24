@@ -24,7 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <nav style={{ display: "flex", gap: 16, marginLeft: "auto", fontSize: 14 }} className="muted">
               <Link href="/">Search</Link>
               <Link href="/explore">Explore</Link>
-              <Link href="/mcp">Use via Claude</Link>
+              <Link href="/mcp">Use via AI (MCP)</Link>
               <Link href="/about">About the method</Link>
             </nav>
           </div>

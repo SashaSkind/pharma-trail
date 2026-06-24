@@ -2,7 +2,7 @@
   "mcpServers": {
     "pharma-trail": {
       "type": "http",
-      "url": "https://pharma-mcp-1064429920602.us-central1.run.app/mcp"
+      "url": "https://br-wild-smoke-ajj9b4o9-mcp.compute.c-3.us-east-2.aws.neon.tech/mcp"
     }
   }
 }

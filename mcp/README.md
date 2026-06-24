@@ -1,28 +1,30 @@
 # Pharma Trail — hosted public MCP endpoint
 
-A remote, **read-only** MCP server that lets anyone connect their Claude (Desktop, Code, or
-claude.ai web) to the Pharma Trail ClickHouse dataset by URL — no credentials shared.
+A remote, **read-only** MCP server that lets anyone connect any MCP-capable AI (Claude, ChatGPT,
+Cursor, VS Code Copilot, …) to the Pharma Trail ClickHouse dataset by URL — no credentials shared.
 
-It runs the official `mcp-clickhouse` server bridged to **Streamable HTTP** at `/mcp` (via
-[supergateway](https://github.com/supercorp-ai/supergateway)), connecting to ClickHouse as the
-read-only `webapp` user.
-
-**🟢 Live (Cloud Run):** `https://pharma-mcp-1064429920602.us-central1.run.app/mcp`
-— verified end-to-end (initialize → tools/list → run_query) against the public URL.
-(Note: `/healthz` returns a Google 404 on Cloud Run — cosmetic; verify by connecting Claude and
-asking a question, or with an MCP `initialize` POST to `/mcp`.)
+**🟢 Live (Neon Functions):** `https://br-wild-smoke-ajj9b4o9-mcp.compute.c-3.us-east-2.aws.neon.tech/mcp`
+— a custom **TypeScript** MCP (Hono + `@hono/mcp` Streamable HTTP) that advertises `instructions`
+(schema + auto-visualize playbook) on connect, so a bare connection already knows how to behave.
+Source + deploy: **`neon-mcp/`** (see `neon-mcp/README.md`). Verified end-to-end
+(initialize → tools/list → run_query / find_doctor) against the public URL.
 
 ```
-Claude (web / desktop / code) ──HTTPS──► your host (/mcp) ──► mcp-clickhouse ──► ClickHouse (webapp, rx)
+AI client (Claude / ChatGPT / Cursor …) ──HTTPS──► Neon Function (/mcp) ──► ClickHouse (webapp, rx)
 ```
 
-Because the ClickHouse connection happens **from your host** (not from the Claude side), this
-works even from sandboxed/cloud Claude environments that can't reach `*.clickhouse.cloud`.
+Because the ClickHouse connection happens **from the function** (not from the AI side), this works
+even from sandboxed/cloud environments that can't reach `*.clickhouse.cloud`.
+
+> **Note:** the original hosted instance ran the stock Python `mcp-clickhouse` on Google Cloud Run.
+> That instance has been **retired** (to avoid idle billing); the Cloud Run / Docker instructions
+> below are kept as a **self-host alternative**. The current live endpoint is the Neon Function above.
 
 ---
 
 ## Tools exposed
-`list_databases`, `list_tables`, `run_query` (SELECT-only — `CLICKHOUSE_ALLOW_WRITE_ACCESS=false`).
+`run_query`, `find_doctor` (name lookup), `list_tables` — all SELECT-only / read-only.
+*(The legacy Python self-host below instead exposes `list_databases`, `list_tables`, `run_query`.)*
 
 ## Required env (set at deploy — never commit the password)
 ```

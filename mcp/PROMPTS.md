@@ -1,8 +1,8 @@
 # Pharma Trail — prompts for Claude (via the MCP)
 
-Connect Claude to the MCP first (`https://pharma-mcp-1064429920602.us-central1.run.app/mcp`),
-enable **Artifacts** for charts, then paste any prompt below. Works in claude.ai, Claude Desktop,
-Claude Code, or any LibreChat agent wired to the endpoint.
+Connect your AI to the MCP first (`https://br-wild-smoke-ajj9b4o9-mcp.compute.c-3.us-east-2.aws.neon.tech/mcp`),
+enable **Artifacts**/charts, then paste any prompt below. Works with any MCP client — claude.ai,
+Claude Desktop, Claude Code, ChatGPT, Cursor, VS Code Copilot, or any LibreChat agent.
 
 **Schema (database `rx`, program year 2024):**
 - `doctors(npi, name, specialty, city, state, total_pay, total_claims)` — search by name with `positionCaseInsensitive(name,'smith')>0`
