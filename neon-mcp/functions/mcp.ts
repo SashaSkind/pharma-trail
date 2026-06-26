@@ -92,9 +92,20 @@ function buildServer(): McpServer {
     "run_query",
     {
       description:
-        "Run a read-only SQL SELECT against the rx ClickHouse database (CMS payments × Part D, 2024). " +
-        "Returns JSON. Aggregate in SQL (GROUP BY/avg/count), then VISUALIZE the result as a chart " +
-        "artifact — charting the answer is the default, not an extra step.",
+        "Run a read-only SQL SELECT against ClickHouse database `rx` (public CMS Open Payments × Medicare " +
+        "Part D, program year 2024). Returns JSON. AGGREGATE server-side (GROUP BY/avg/count), then chart the " +
+        "result — charting is the default, not an extra step.\n" +
+        "Tables (all in db `rx`; you may reference them bare, e.g. FROM doctors):\n" +
+        "• doctors(npi, name, specialty, city, state, total_pay, total_claims)\n" +
+        "• rx_by_npi_drug(drug_key, npi, specialty, clms, drug_cst, benes) — prescribing per doctor×drug (PREFER this)\n" +
+        "• pay_by_npi_drug(drug_key, npi, pay_amount, pay_count) — payments per doctor×drug (no Metformin)\n" +
+        "• payments_raw(npi, recipient_type, specialty, amount, manufacturer, drug1..5, payment_date) — raw events\n" +
+        "• partd_raw(npi, specialty, brnd_name, gnrc_name, tot_clms, tot_benes, tot_drug_cst, year)\n" +
+        "• drug_map(drug_key, brnd_name, gnrc_name, match_on)\n" +
+        "Join: rx_by_npi_drug LEFT JOIN pay_by_npi_drug USING (drug_key, npi); join doctors USING (npi). " +
+        "'Paid' = pay_amount>0; 'unpaid' = no matching pay row (the LEFT JOIN NULL). 50 drugs = 49 branded + " +
+        "Metformin (control, ~0 payments). Report n per group and compare WITHIN specialty when claiming an effect. " +
+        "Caveat: public data = correlation not causation; Part D suppresses rows with tot_clms<11.",
       inputSchema: { query: z.string().describe("A read-only ClickHouse SELECT query") },
     },
     async ({ query }) => {
@@ -130,11 +141,22 @@ function buildServer(): McpServer {
 
   server.registerTool(
     "list_tables",
-    { description: "List tables in the rx database with row counts.", inputSchema: {} },
+    {
+      description:
+        "List every table in the `rx` database WITH its row count and full column schema (name + type). " +
+        "Call this first if you're unsure of the layout — it returns everything needed to write queries.",
+      inputSchema: {},
+    },
     async () => {
       try {
         const out = await chQuery(
-          "SELECT name, total_rows FROM system.tables WHERE database='rx' ORDER BY total_rows DESC"
+          `SELECT t.name AS table, t.total_rows,
+                  arrayStringConcat(groupArray(c.name || ' ' || c.type), ', ') AS columns
+           FROM system.tables t
+           INNER JOIN system.columns c ON c.database = t.database AND c.table = t.name
+           WHERE t.database = 'rx'
+           GROUP BY t.name, t.total_rows
+           ORDER BY t.total_rows DESC`
         );
         return { content: [{ type: "text", text: out }] };
       } catch (e) {
