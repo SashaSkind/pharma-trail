@@ -32,5 +32,8 @@ This file adds environment/run notes for agents.
     shows a "Couldn't load the data" panel.
   - `npm run build` **fails at "Collecting page data"** for the same reason (compile + TypeScript
     still pass first). A full build/end-to-end run needs the four env vars present.
-- Put credentials in `web/.env.local` (Next.js auto-loads it). In Cursor Cloud, add them as Secrets
-  so they are injected into the VM.
+- Put credentials in **`web/.env.local`** (Next.js loads env from the `web/` project dir, where
+  `next dev` runs — a repo-root `.env.local` is **not** picked up by the app). In Cursor Cloud, add
+  them as Secrets so they are injected into the VM.
+- The app reads `NEON_DATABASE_URL` + `CH_HOST`/`CH_USER`/`CH_PASSWORD`. It does **not** use `PG_DSN`
+  (that's for the local Python CDC demo in `scripts/`).
