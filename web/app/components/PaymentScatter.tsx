@@ -4,7 +4,7 @@ import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContaine
 type Event = { date: string; amount: number; manufacturer: string; drug: string };
 
 const DRUG_COLOR: Record<string, string> = {
-  ELIQUIS: "#4f9dff", XARELTO: "#a06bff", OZEMPIC: "#ffce54", HUMIRA: "#ff7b7b",
+  ELIQUIS: "#2f6feb", XARELTO: "#7c5cff", OZEMPIC: "#e6a817", HUMIRA: "#dc3f45",
 };
 
 export default function PaymentScatter({ events }: { events: Event[] }) {
@@ -18,9 +18,9 @@ export default function PaymentScatter({ events }: { events: Event[] }) {
     <div style={{ width: "100%", height: 260 }}>
       <ResponsiveContainer>
         <ScatterChart margin={{ left: 8, right: 16, top: 12, bottom: 16 }}>
-          <XAxis type="number" dataKey="i" name="event" stroke="#8a98ac" fontSize={12}
-            label={{ value: "payment event #", position: "insideBottom", offset: -6, fill: "#8a98ac", fontSize: 12 }} />
-          <YAxis type="number" dataKey="amount" name="amount" stroke="#8a98ac" fontSize={12}
+          <XAxis type="number" dataKey="i" name="event" stroke="#5b6673" fontSize={12}
+            label={{ value: "payment event #", position: "insideBottom", offset: -6, fill: "#5b6673", fontSize: 12 }} />
+          <YAxis type="number" dataKey="amount" name="amount" stroke="#5b6673" fontSize={12}
             tickFormatter={(v) => `$${v}`} />
           <ZAxis range={[60, 60]} />
           <Tooltip
@@ -29,7 +29,7 @@ export default function PaymentScatter({ events }: { events: Event[] }) {
               const p = payload?.[0]?.payload as (typeof data)[0] | undefined;
               if (!p) return null;
               return (
-                <div style={{ background: "#1a212e", border: "1px solid #243044", borderRadius: 8, padding: "8px 10px", fontSize: 12 }}>
+                <div style={{ background: "#ffffff", border: "1px solid #e4e7ec", borderRadius: 8, padding: "8px 10px", fontSize: 12, boxShadow: "0 4px 12px rgba(11,14,20,0.08)" }}>
                   <div><b>${p.amount.toLocaleString()}</b> · {p.drug}</div>
                   <div className="muted">{p.manufacturer}</div>
                   <div className="muted">{p.date}</div>
@@ -38,7 +38,7 @@ export default function PaymentScatter({ events }: { events: Event[] }) {
             }}
           />
           <Scatter data={data}>
-            {data.map((d, i) => <Cell key={i} fill={DRUG_COLOR[d.drug] ?? "#8a98ac"} />)}
+            {data.map((d, i) => <Cell key={i} fill={DRUG_COLOR[d.drug] ?? "#5b6673"} />)}
           </Scatter>
         </ScatterChart>
       </ResponsiveContainer>

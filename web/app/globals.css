@@ -1,42 +1,210 @@
+/* Pharma Trail — Design System tokens & base styles.
+   Light, editorial, public-trust direction. The semantic spine is sacred:
+   paid = red, clean/unpaid = green, investigative = blue. Change a token here
+   and the whole app reflows. */
 @import "tailwindcss";
 
 :root {
-  --bg: #0b0e14;
-  --panel: #131822;
-  --panel-2: #1a212e;
-  --border: #243044;
-  --text: #e6edf6;
-  --muted: #8a98ac;
-  --accent: #4f9dff;
-  --paid: #ff6b6b;
-  --unpaid: #5ec8a0;
+  /* ---- Surfaces (light, warm paper) ---- */
+  --surface-paper: #fbfbf9;   /* app background */
+  --surface-card: #ffffff;    /* cards / panels */
+  --surface-sunken: #f4f5f3;  /* inputs, hovered rows, wells */
+  --surface-ink: #0b0e14;     /* dark hero panels / footers / slides */
+
+  /* ---- Ink & text ---- */
+  --ink: #0b0e14;
+  --text: #14181f;
+  --text-muted: #5b6673;
+  --text-on-ink: #e6edf6;
+  --text-muted-on-ink: #8a98ac;
+
+  /* ---- Accent — investigative blue ---- */
+  --accent: #2f6feb;          /* on light */
+  --accent-hover: #2456c4;
+  --accent-bright: #4f9dff;   /* reserved for dark backgrounds */
+
+  /* ---- Semantic data spine (darkened for AA on light) ---- */
+  --paid: #dc3f45;            /* paid / above peers */
+  --clean: #1f9d70;           /* unpaid / clean / below peers */
+  /* bright forms for dark surfaces + charts */
+  --paid-bright: #ff6b6b;
+  --clean-bright: #5ec8a0;
+
+  /* ---- Borders ---- */
+  --border: #e4e7ec;          /* hairline: cards, dividers */
+  --border-strong: #cfd4dc;   /* input outlines, stronger separators */
+  --border-ink: #243044;      /* borders on dark panels */
+
+  /* ---- Categorical viz (per-drug) ---- */
+  --pt-viz-1: #2f6feb;
+  --pt-viz-2: #7c5cff;
+  --pt-viz-3: #e6a817;
+  --pt-viz-4: #dc3f45;
+  --pt-viz-5: #1f9d70;
+
+  /* ---- Type families ---- */
+  /* --font-serif/sans/mono are injected by next/font on <html>; these are fallbacks. */
+  --font-serif: var(--font-newsreader, ui-serif, Georgia, "Times New Roman", serif);
+  --font-sans: var(--font-public-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+  --font-mono: var(--font-plex-mono, ui-monospace, SFMono-Regular, Menlo, "Cascadia Mono", monospace);
+
+  /* ---- Spacing (4px base grid) ---- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+
+  /* ---- Layout ---- */
+  --container: 980px;
+  --container-wide: 1120px;
+  --gutter: 20px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;   /* inputs / selects */
+  --radius-md: 12px;  /* cards / panels */
+  --radius-lg: 16px;  /* hero search field */
+  --radius-pill: 999px;
+
+  /* ---- Shadows (soft, low, top-light source) ---- */
+  --shadow-xs: 0 1px 2px rgba(11, 14, 20, 0.05);
+  --shadow-sm: 0 1px 3px rgba(11, 14, 20, 0.06), 0 1px 2px rgba(11, 14, 20, 0.04);
+  --shadow-md: 0 4px 12px rgba(11, 14, 20, 0.08), 0 2px 4px rgba(11, 14, 20, 0.04);
+  --shadow-lg: 0 12px 32px rgba(11, 14, 20, 0.16), 0 4px 8px rgba(11, 14, 20, 0.08);
+  --focus-ring: rgba(47, 111, 235, 0.35);
+  --shadow-focus: 0 0 0 3px var(--focus-ring);
+
+  /* ---- Motion — calm, precise, no bounce ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur-normal: 200ms;
+  --dur-slow: 320ms;
+
+  /* ---- Back-compat aliases (old var names → new light palette) ----
+     Existing inline styles reference these; mapping them flips the app to light. */
+  --bg: var(--surface-paper);
+  --panel: var(--surface-card);
+  --panel-2: var(--surface-sunken);
+  --muted: var(--text-muted);
+  --unpaid: var(--clean);
 }
+
+* { box-sizing: border-box; }
 
 html, body {
-  background: var(--bg);
+  background: var(--surface-paper);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-a { color: inherit; text-decoration: none; }
+body { margin: 0; }
 
-.container { max-width: 980px; margin: 0 auto; padding: 0 20px; }
-.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
-.muted { color: var(--muted); }
+a { color: inherit; text-decoration: none; transition: color var(--dur-fast) var(--ease-standard); }
+a.accent:hover, .link:hover { color: var(--accent-hover); }
+
+/* Sticky, translucent site header with a soft blur. */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--surface-paper) 82%, transparent);
+  backdrop-filter: saturate(1.4) blur(8px);
+  -webkit-backdrop-filter: saturate(1.4) blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Editorial headline face for headings + pull-quotes. */
+h1, h2, h3, .serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+/* ---- Layout helpers ---- */
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.container-wide { max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* ---- Cards / panels ---- */
+.panel {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.panel.card-hover { transition: transform var(--dur-normal) var(--ease-standard), box-shadow var(--dur-normal) var(--ease-standard); }
+.panel.card-hover:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* Dark "ink" surface — flip any section to navy. */
+.ink {
+  background: var(--surface-ink);
+  color: var(--text-on-ink);
+  border-color: var(--border-ink);
+  box-shadow: var(--shadow-lg);
+}
+.ink h1, .ink h2, .ink h3 { color: #fff; }
+.ink .muted { color: var(--text-muted-on-ink); }
+.ink .accent { color: var(--accent-bright); }
+
+/* ---- Text utilities ---- */
+.muted { color: var(--text-muted); }
 .accent { color: var(--accent); }
-.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); }
-.badge-paid { color: var(--paid); border-color: color-mix(in srgb, var(--paid) 45%, transparent); }
-.badge-unpaid { color: var(--unpaid); border-color: color-mix(in srgb, var(--unpaid) 45%, transparent); }
-.up { color: var(--paid); }
-.down { color: var(--unpaid); }
-input, select { color: var(--text); }
+.mono { font-family: var(--font-mono); font-feature-settings: "tnum" 1; }
+.eyebrow {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted); font-family: var(--font-sans);
+}
 
-/* loading skeleton (shimmer) for stats that stream in behind SWR */
+/* ---- Pills / badges (fully round) ---- */
+.pill {
+  display: inline-block; padding: 3px 10px; border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 500; border: 1px solid var(--border); font-family: var(--font-mono);
+}
+.badge-paid { color: var(--paid); background: color-mix(in srgb, var(--paid) 8%, transparent); border-color: color-mix(in srgb, var(--paid) 40%, transparent); }
+.badge-unpaid { color: var(--clean); background: color-mix(in srgb, var(--clean) 8%, transparent); border-color: color-mix(in srgb, var(--clean) 40%, transparent); }
+.up { color: var(--paid); }
+.down { color: var(--clean); }
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-sans); font-size: 15px; font-weight: 600; line-height: 1;
+  padding: 12px 18px; border-radius: var(--radius-sm); border: 1px solid transparent;
+  cursor: pointer; transition: filter var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard), background var(--dur-fast) var(--ease-standard);
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-secondary { background: var(--surface-card); color: var(--text); border-color: var(--border-strong); box-shadow: var(--shadow-xs); }
+.btn-secondary:hover { background: var(--surface-sunken); }
+.btn-secondary:active { transform: translateY(1px); }
+.btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+/* ---- Inputs / selects ---- */
+input, select, textarea {
+  color: var(--text); font-family: var(--font-sans);
+  background: var(--surface-card); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard);
+}
+input::placeholder { color: var(--text-muted); }
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--accent); box-shadow: var(--shadow-focus);
+}
+
+/* Search result rows tint to the sunken surface on hover. */
+.search-hit { transition: background var(--dur-fast) var(--ease-standard); }
+.search-hit:hover { background: var(--surface-sunken); }
+.search-hit:last-child { border-bottom: none !important; }
+
+/* ---- Loading skeleton (shimmer), light-tuned ---- */
 .skeleton {
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--panel-2) 25%, #20283a 37%, var(--panel-2) 63%);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--surface-sunken) 25%, #eceef1 37%, var(--surface-sunken) 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
 }
 @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

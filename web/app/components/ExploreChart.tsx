@@ -13,16 +13,16 @@ export default function ExploreChart({ bands }: { bands: Band[] }) {
     <div style={{ width: "100%", height: 320 }}>
       <ResponsiveContainer>
         <BarChart data={data} margin={{ left: 4, right: 16, top: 24, bottom: 4 }}>
-          <XAxis dataKey="band" stroke="#8a98ac" fontSize={13} />
-          <YAxis stroke="#8a98ac" fontSize={12} label={{ value: "avg claims", angle: -90, position: "insideLeft", fill: "#8a98ac", fontSize: 12 }} />
+          <XAxis dataKey="band" stroke="#5b6673" fontSize={13} />
+          <YAxis stroke="#5b6673" fontSize={12} label={{ value: "avg claims", angle: -90, position: "insideLeft", fill: "#5b6673", fontSize: 12 }} />
           <Tooltip
-            contentStyle={{ background: "#1a212e", border: "1px solid #243044", borderRadius: 8 }}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            contentStyle={{ background: "#ffffff", border: "1px solid #e4e7ec", borderRadius: 8, boxShadow: "0 4px 12px rgba(11,14,20,0.08)" }}
+            cursor={{ fill: "rgba(11,14,20,0.04)" }}
             labelFormatter={(l) => `Payment band: ${l}`}
           />
           <Bar dataKey="avg" radius={[5, 5, 0, 0]}>
-            {data.map((d, i) => <Cell key={i} fill={d.band === "$0" ? "#5ec8a0" : "#4f9dff"} />)}
-            <LabelList dataKey="avg" position="top" fill="#e6edf6" fontSize={12} />
+            {data.map((d, i) => <Cell key={i} fill={d.band === "$0" ? "#1f9d70" : "#2f6feb"} />)}
+            <LabelList dataKey="avg" position="top" fill="#14181f" fontSize={12} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

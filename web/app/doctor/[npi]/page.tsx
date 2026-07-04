@@ -19,20 +19,20 @@ export default async function DoctorPage({ params }: { params: Promise<{ npi: st
 
   return (
     <div>
-      <Link href="/" className="muted" style={{ fontSize: 13 }}>← search</Link>
+      <Link href="/" className="muted link" style={{ fontSize: 13 }}>← search</Link>
 
-      <h1 style={{ fontSize: 28, fontWeight: 800, margin: "10px 0 2px" }}>{doctor.name ?? `NPI ${doctor.npi}`}</h1>
+      <h1 style={{ fontSize: 32, margin: "12px 0 2px" }}>{doctor.name ?? `NPI ${doctor.npi}`}</h1>
       <div className="muted" style={{ marginBottom: 18 }}>
-        {doctor.specialty || "Specialty unknown"} · {[doctor.city, doctor.state].filter(Boolean).join(", ") || "—"} · NPI {doctor.npi}
+        {doctor.specialty || "Specialty unknown"} · {[doctor.city, doctor.state].filter(Boolean).join(", ") || "—"} · <span className="mono">NPI {doctor.npi}</span>
       </div>
 
       {/* headline (known instantly from the doctors row) */}
-      <div className="panel" style={{ padding: 18, marginBottom: 18 }}>
+      <div className="panel" style={{ padding: 18, marginBottom: 18, borderLeft: `3px solid ${totalPay > 0 ? "var(--paid)" : "var(--clean)"}` }}>
         <div style={{ fontSize: 15 }}>
           {totalPay > 0 ? (
-            <>💵 Received <b className="up">{money(totalPay)}</b> in industry payments for these drugs ({DATA_YEAR})</>
+            <>💵 Received <b className="up mono">{money(totalPay)}</b> in industry payments for these drugs ({DATA_YEAR})</>
           ) : (
-            <>✅ <b className="down">No industry payments</b> recorded for these drugs ({DATA_YEAR})</>
+            <>✓ <b className="down">No industry payments</b> recorded for these drugs ({DATA_YEAR})</>
           )}
         </div>
       </div>
