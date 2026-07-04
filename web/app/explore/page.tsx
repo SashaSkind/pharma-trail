@@ -47,8 +47,9 @@ export default function ExplorePage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Explore the data</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>Live aggregation</div>
+      <h1 style={{ fontSize: 32, marginBottom: 6 }}>Explore the data</h1>
+      <p className="muted" style={{ marginBottom: 18, fontSize: 16, lineHeight: 1.55 }}>
         Live aggregation over ~1.5M prescriber records in ClickHouse. Change a filter — it recomputes on the spot.
       </p>
 
@@ -76,7 +77,7 @@ export default function ExplorePage() {
         </Field>
         <div style={{ marginLeft: "auto", fontSize: 13 }} className="muted">
           {loading ? "running…" : res && (
-            <span>⚡ scanned <b className="accent">{res.rows_read.toLocaleString()}</b> rows in <b className="accent">{res.elapsed_ms} ms</b></span>
+            <span>⚡ scanned <b className="accent mono">{res.rows_read.toLocaleString()}</b> rows in <b className="accent mono">{res.elapsed_ms} ms</b></span>
           )}
         </div>
       </div>
@@ -111,8 +112,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function Stat({ label, value, cls }: { label: string; value: number | string; cls?: string }) {
   return (
     <div className="panel" style={{ flex: "1 1 200px", padding: 16 }}>
-      <div className={cls} style={{ fontSize: 26, fontWeight: 800 }}>{value}</div>
-      <div className="muted" style={{ fontSize: 13 }}>{label}</div>
+      <div className={`mono ${cls ?? ""}`} style={{ fontSize: 26, fontWeight: 600 }}>{value}</div>
+      <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>{label}</div>
     </div>
   );
 }

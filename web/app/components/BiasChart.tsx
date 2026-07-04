@@ -16,15 +16,15 @@ export default function BiasChart({ rows }: { rows: Row[] }) {
     <div style={{ width: "100%", height: 60 + data.length * 64 }}>
       <ResponsiveContainer>
         <BarChart data={data} layout="vertical" margin={{ left: 10, right: 24, top: 8, bottom: 8 }}>
-          <XAxis type="number" stroke="#8a98ac" fontSize={12} />
-          <YAxis type="category" dataKey="drug" stroke="#8a98ac" fontSize={13} width={78} />
+          <XAxis type="number" stroke="#5b6673" fontSize={12} />
+          <YAxis type="category" dataKey="drug" stroke="#5b6673" fontSize={13} width={78} />
           <Tooltip
-            contentStyle={{ background: "#1a212e", border: "1px solid #243044", borderRadius: 8 }}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            contentStyle={{ background: "#ffffff", border: "1px solid #e4e7ec", borderRadius: 8, boxShadow: "0 4px 12px rgba(11,14,20,0.08)" }}
+            cursor={{ fill: "rgba(11,14,20,0.04)" }}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="This doctor" fill="#4f9dff" radius={[0, 4, 4, 0]} />
-          <Bar dataKey="Unpaid peer avg" fill="#5ec8a0" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="This doctor" fill="#2f6feb" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="Unpaid peer avg" fill="#1f9d70" radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

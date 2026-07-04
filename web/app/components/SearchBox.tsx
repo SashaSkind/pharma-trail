@@ -32,6 +32,12 @@ export default function SearchBox() {
 
   return (
     <div style={{ position: "relative" }}>
+      <span aria-hidden style={{ position: "absolute", left: 18, top: "50%", transform: "translateY(-50%)", display: "flex", pointerEvents: "none" }}>
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3-3" />
+        </svg>
+      </span>
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -39,24 +45,25 @@ export default function SearchBox() {
         placeholder="Search a doctor by name… e.g. Smith"
         autoFocus
         style={{
-          width: "100%", padding: "14px 16px", fontSize: 17, borderRadius: 12,
-          background: "var(--panel)", border: "1px solid var(--border)", outline: "none",
+          width: "100%", padding: "16px 18px 16px 48px", fontSize: 17, borderRadius: "var(--radius-lg)",
+          background: "var(--surface-card)", boxShadow: "var(--shadow-sm)",
         }}
       />
-      {loading && <div className="muted" style={{ position: "absolute", right: 14, top: 16, fontSize: 13 }}>…</div>}
+      {loading && <div className="muted" style={{ position: "absolute", right: 18, top: "50%", transform: "translateY(-50%)", fontSize: 13 }}>…</div>}
       {open && hits.length > 0 && (
-        <div className="panel" style={{ position: "absolute", top: 56, left: 0, right: 0, zIndex: 10, overflow: "hidden" }}>
+        <div className="panel" style={{ position: "absolute", top: 62, left: 0, right: 0, zIndex: 10, overflow: "hidden", boxShadow: "var(--shadow-lg)", textAlign: "left" }}>
           {hits.map((h) => (
             <button
               key={h.npi}
               onClick={() => router.push(`/doctor/${h.npi}`)}
+              className="search-hit"
               style={{
-                display: "flex", width: "100%", textAlign: "left", gap: 10, padding: "11px 14px",
+                display: "flex", width: "100%", textAlign: "left", gap: 10, padding: "12px 16px", alignItems: "center",
                 background: "transparent", border: "none", borderBottom: "1px solid var(--border)", cursor: "pointer",
               }}
             >
               <span style={{ flex: 1 }}>
-                <b>{h.name ?? `NPI ${h.npi}`}</b>
+                <b style={{ fontWeight: 600 }}>{h.name ?? `NPI ${h.npi}`}</b>
                 <span className="muted" style={{ fontSize: 13 }}>
                   {" "}— {h.specialty || "—"} · {[h.city, h.state].filter(Boolean).join(", ")}
                 </span>
