@@ -15,17 +15,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <header style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="container" style={{ display: "flex", alignItems: "center", gap: 20, height: 58 }}>
-            <Link href="/" style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 9 }}>
+          <div className="container site-head-row">
+            <Link href="/" className="site-logo">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Pharma Trail" width={30} height={30} style={{ borderRadius: "50%" }} />
               Pharma Trail
             </Link>
-            <nav style={{ display: "flex", gap: 16, marginLeft: "auto", fontSize: 14 }} className="muted">
+            <nav className="site-nav muted">
               <Link href="/">Search</Link>
               <Link href="/explore">Explore</Link>
               <Link href="/mcp">Use via AI (MCP)</Link>
-              <Link href="/about">About the method</Link>
+              <Link href="/about">About</Link>
             </nav>
           </div>
         </header>
