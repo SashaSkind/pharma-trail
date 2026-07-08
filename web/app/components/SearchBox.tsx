@@ -61,7 +61,8 @@ export default function SearchBox() {
                   {" "}— {h.specialty || "—"} · {[h.city, h.state].filter(Boolean).join(", ")}
                 </span>
               </span>
-              <span className={`pill ${h.total_pay > 0 ? "badge-paid" : "badge-unpaid"}`}>
+              <span className={`pill ${h.total_pay > 0 ? "badge-paid" : "badge-unpaid"}`}
+                style={{ flexShrink: 0, whiteSpace: "nowrap", alignSelf: "center" }}>
                 {h.total_pay > 0 ? `$${Math.round(h.total_pay).toLocaleString()}` : "no payments"}
               </span>
             </button>
