@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Pharma Trail — payment categories (2024)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root{--bg:#0b0e14;--panel:#141925;--border:#2a3344;--ink:#e6edf3;--muted:#8b97a8;
+        --money:#faff69;--count:#5cc8ff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:28px;
+    font:14px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h1{font-size:23px;margin:0 0 4px}
+  .sub{color:var(--muted);max-width:900px;margin:0 0 20px}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:900px){.charts{grid-template-columns:1fr}}
+  .card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:16px;margin-bottom:20px}
+  .card h3{margin:0 0 10px;font-size:14px}
+  canvas{max-height:340px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  th{color:var(--muted);font-weight:600}
+  .foot{color:var(--muted);font-size:12px;max-width:920px;line-height:1.7}
+  .k{color:var(--money)} .c{color:var(--count)}
+</style>
+</head>
+<body>
+  <h1>How drug companies pay doctors — by category (2024)</h1>
+  <p class="sub">Nature of payment for the 50 tracked drugs. <b class="k">Dollars</b> concentrate in speaking &
+  consulting; <b class="c">volume</b> is almost entirely free meals. CMS Open Payments.</p>
+
+  <div class="charts">
+    <div class="card"><h3><span class="k">■</span> Total $ by category</h3><canvas id="money"></canvas></div>
+    <div class="card"><h3><span class="c">■</span> # of payments by category (log scale)</h3><canvas id="count"></canvas></div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead><tr><th>#</th><th>category</th><th>total $</th><th># payments</th><th>avg / payment</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <p class="foot">
+    Speaker fees + consulting = the majority of dollars from a sliver of payments. Food &amp; Beverage is
+    ~97% of all payment <i>events</i> but averages $22. A handful of royalty/acquisition payments sit in the
+    million-dollar tail. Public observational data — a payment is a relationship, not proof of influence.
+  </p>
+
+<script>
+const D = [
+  {c:'Speaker / faculty fees (non-CME)', usd:186445914, n:81940},
+  {c:'Food & Beverage',                  usd:127188229, n:5743234},
+  {c:'Consulting Fee',                   usd:30741620,  n:11132},
+  {c:'Travel & Lodging',                 usd:24176814,  n:81005},
+  {c:'Royalty or License',               usd:7435944,   n:6},
+  {c:'Education',                         usd:1530603,   n:24760},
+  {c:'Grant',                            usd:1080578,   n:95},
+  {c:'Speaker / faculty (CME)',          usd:895381,    n:294},
+  {c:'Honoraria',                        usd:331070,    n:126},
+  {c:'Acquisitions',                     usd:79872,     n:1},
+];
+const short = s => s.replace(' / faculty','').replace(' or License','').replace(' and ',' & ');
+const money = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+
+new Chart(document.getElementById('money'),{type:'bar',
+  data:{labels:D.map(d=>short(d.c)),datasets:[{data:D.map(d=>d.usd),backgroundColor:'#faff69'}]},
+  options:{indexAxis:'y',plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:c=>money.format(c.parsed.x)}}},
+    scales:{x:{ticks:{color:'#8b97a8',callback:v=>'$'+(v/1e6)+'M'},grid:{color:'#1f2735'}},
+            y:{ticks:{color:'#cdd6e3'},grid:{display:false}}}}});
+
+new Chart(document.getElementById('count'),{type:'bar',
+  data:{labels:D.map(d=>short(d.c)),datasets:[{data:D.map(d=>d.n),backgroundColor:'#5cc8ff'}]},
+  options:{indexAxis:'y',plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:c=>c.parsed.x.toLocaleString()+' payments'}}},
+    scales:{x:{type:'logarithmic',ticks:{color:'#8b97a8'},grid:{color:'#1f2735'}},
+            y:{ticks:{color:'#cdd6e3'},grid:{display:false}}}}});
+
+document.getElementById('rows').innerHTML = D.map((d,i)=>`<tr>
+  <td>${i+1}</td><td>${d.c}</td>
+  <td class="k">${money.format(d.usd)}</td>
+  <td class="c">${d.n.toLocaleString()}</td>
+  <td>${money.format(d.usd/d.n)}</td></tr>`).join('');
+</script>
+</body>
+</html>

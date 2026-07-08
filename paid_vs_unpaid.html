@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Pharma Trail — do paid doctors prescribe more? (2024)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root{--bg:#0b0e14;--panel:#141925;--border:#2a3344;--ink:#e6edf3;--muted:#8b97a8;
+        --paid:#f5a623;--unpaid:#3da9fc;--green:#42d392;--red:#e06c75}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:28px;
+    font:14px/1.55 ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--muted);max-width:900px;margin:0 0 8px}
+  .head{font-size:15px;margin:10px 0 20px}
+  .head b{color:var(--green)}
+  .panel{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:18px;margin-bottom:20px}
+  canvas{max-height:420px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:600}
+  .pos{color:var(--green)} .flat{color:var(--muted)} .ctrl{color:var(--unpaid)}
+  .pill{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+  .foot{color:var(--muted);font-size:12px;line-height:1.7;max-width:920px}
+  .legend{display:flex;gap:18px;font-size:12.5px;color:var(--muted);margin:2px 0 12px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+  <h1>Do paid doctors prescribe more? — top 12 drugs by industry payments, 2024</h1>
+  <p class="sub">Avg Medicare Part D claims per prescriber, <b style="color:var(--paid)">paid</b> vs
+  <b style="color:var(--unpaid)">unpaid</b> for that exact drug. Public CMS data (Open Payments × Part D).</p>
+  <p class="head">Across all 12 of the most-paid drugs, prescribers who took money wrote <b>more</b> — from
+  <b>+1.6%</b> to <b>+57%</b> — and the gap <b>survives within-specialty adjustment</b>. The control,
+  <b style="color:var(--unpaid)">Metformin</b> (generic, $0 in payments by design), has no paid group at all.</p>
+
+  <div class="panel">
+    <div class="legend">
+      <span><span class="dot" style="background:var(--paid)"></span>paid prescribers (avg claims)</span>
+      <span><span class="dot" style="background:var(--unpaid)"></span>unpaid prescribers (avg claims)</span>
+    </div>
+    <canvas id="bar"></canvas>
+  </div>
+
+  <div class="panel">
+    <table>
+      <thead><tr>
+        <th>drug</th><th>paid avg</th><th>unpaid avg</th>
+        <th>raw lift</th><th>within-specialty lift</th><th>n paid</th><th>n unpaid</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="foot" style="margin:12px 2px 0">
+      “Within-specialty lift” = each specialty’s paid-vs-unpaid gap, weighted by its paid prescribers, counting
+      only specialties with n≥30 on both sides — so it can’t be explained by specialty mix. All cells above have
+      n≥30. The $10k+ payment tail (not shown) is typically &lt;10 prescribers per drug.
+    </p>
+  </div>
+
+  <p class="foot">
+    <b>Correlation, not causation.</b> This is observational public data. Manufacturers also target physicians who
+    already prescribe more, and even within specialty residual confounding (patient volume, subspecialty, academic
+    setting) can remain — so a higher paid-group average cannot be read as payments <i>causing</i> prescribing.
+    Part D suppresses any prescriber-drug row with fewer than 11 claims.
+  </p>
+
+<script>
+// Live results from the Pharma Trail ClickHouse MCP (2024). Sorted by raw lift.
+const D = [
+  {drug:'Jardiance', paid:74.4, unpaid:47.3, raw:57.3, adj:49.3, np:47364, nu:150911},
+  {drug:'Mounjaro',  paid:59.7, unpaid:41.5, raw:43.9, adj:43.0, np:36187, nu:61021},
+  {drug:'Caplyta',   paid:28.2, unpaid:20.0, raw:41.0, adj:41.3, np:2731,  nu:1845},
+  {drug:'Vraylar',   paid:34.1, unpaid:25.3, raw:34.8, adj:33.9, np:12116, nu:8202},
+  {drug:'Rexulti',   paid:31.9, unpaid:24.7, raw:29.1, adj:30.8, np:8474,  nu:7710},
+  {drug:'Rinvoq',    paid:35.2, unpaid:27.3, raw:28.9, adj:26.7, np:3235,  nu:1747},
+  {drug:'Ingrezza',  paid:26.5, unpaid:20.6, raw:28.6, adj:32.2, np:3668,  nu:4745},
+  {drug:'Botox',     paid:37.6, unpaid:29.5, raw:27.5, adj:22.7, np:1305,  nu:750},
+  {drug:'Dupixent',  paid:34.8, unpaid:29.6, raw:17.6, adj:16.5, np:10107, nu:5767},
+  {drug:'Airsupra',  paid:18.6, unpaid:16.8, raw:10.7, adj:12.2, np:371,   nu:177},
+  {drug:'Tremfya',   paid:17.5, unpaid:17.2, raw:1.7,  adj:5.1,  np:848,   nu:250},
+  {drug:'Skyrizi',   paid:19.6, unpaid:19.3, raw:1.6,  adj:0.9,  np:2006,  nu:729},
+  {drug:'Metformin', paid:null, unpaid:126.3, raw:null, adj:null, np:0,    nu:261272},
+];
+
+new Chart(document.getElementById('bar'), {
+  type:'bar',
+  data:{ labels:D.map(d=>d.drug),
+    datasets:[
+      {label:'paid',   data:D.map(d=>d.paid),   backgroundColor:'#f5a623'},
+      {label:'unpaid', data:D.map(d=>d.unpaid), backgroundColor:'#3da9fc'} ]},
+  options:{ plugins:{legend:{display:false}},
+    scales:{ y:{title:{display:true,text:'avg claims / prescriber',color:'#8b97a8'},
+                ticks:{color:'#8b97a8'},grid:{color:'#1f2735'}},
+             x:{ticks:{color:'#cdd6e3'},grid:{display:false}} } }
+});
+
+const fmt = n => n==null ? '—' : n.toLocaleString();
+const lift = v => v==null ? '<span class="ctrl">control · $0</span>'
+  : `<span class="${v>=10?'pos':'flat'}">${v>0?'+':''}${v}%</span>`;
+document.getElementById('rows').innerHTML = D.map(d=>`<tr>
+  <td>${d.drug}${d.drug==='Metformin'?' <span class="pill">control</span>':''}</td>
+  <td>${d.paid==null?'—':d.paid}</td><td>${d.unpaid}</td>
+  <td>${lift(d.raw)}</td><td>${lift(d.adj)}</td>
+  <td>${fmt(d.np)}</td><td>${fmt(d.nu)}</td></tr>`).join('');
+</script>
+</body>
+</html>
