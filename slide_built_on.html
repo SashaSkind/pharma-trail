@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Pharma Trail — Built on</title>
+<style>
+  :root{--bg:#0b0e14;--ink:#f2f5f9;--muted:#9aa6b8;--line:#2c3647;--ch:#faff69;--pg:#5cc8ff;--box:#161c28}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .stage{width:100vw;height:56.25vw;max-height:100vh;max-width:177.78vh;
+    padding:5.5vh 5vw;display:flex;flex-direction:column}
+  .kicker{color:var(--ch);font-weight:700;letter-spacing:.3em;text-transform:uppercase;font-size:2vh}
+  h1{font-size:4.4vh;font-weight:800;margin:.6vh 0 1vh}
+  .legend{display:flex;gap:2.2vw;color:var(--muted);font-size:1.7vh;margin-bottom:1.4vh}
+  .legend i{font-style:normal}
+  .swatch{display:inline-block;width:2.4vh;height:.5vh;border-radius:2px;vertical-align:middle;margin-right:.5vw}
+  .diagram{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+  svg{width:100%;height:100%}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:3vh;
+    border-top:1px solid var(--line);padding-top:2.2vh}
+  .logos{display:flex;gap:1.4vw;color:var(--muted);font-size:1.9vh;font-weight:600;flex-wrap:wrap}
+  .logos b{color:var(--ink)}
+  .data{color:var(--muted);font-size:1.7vh;text-align:right}
+  .data b{color:var(--ch)}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="kicker">Built on</div>
+    <h1>How it works</h1>
+    <div class="legend">
+      <span><span class="swatch" style="background:#faff69"></span><i>live query → ClickHouse</i></span>
+      <span><span class="swatch" style="background:#5cc8ff"></span><i>lookup → Neon</i></span>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1000 460" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="aG" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="10.5" refY="6" orient="auto">
+            <path d="M0,0 L12,6 L0,12 Z" fill="#9aa6b8"/></marker>
+          <marker id="aY" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="10.5" refY="6" orient="auto">
+            <path d="M0,0 L12,6 L0,12 Z" fill="#faff69"/></marker>
+          <marker id="aB" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="10.5" refY="6" orient="auto">
+            <path d="M0,0 L12,6 L0,12 Z" fill="#5cc8ff"/></marker>
+        </defs>
+
+        <!-- boxes: AI(22..222) MCP(392..592) CH(750..984) rows top y64..152, bottom y308..396 -->
+        <!-- arrows drawn first; each ends ON the target box edge -->
+        <g stroke-width="3" stroke-linecap="round" fill="none">
+          <!-- AI -> MCP : x 222 -> 392 -->
+          <line x1="222" y1="108" x2="392" y2="108" stroke="#9aa6b8" marker-end="url(#aG)"/>
+          <!-- Browser -> Next : x 222 -> 392 -->
+          <line x1="222" y1="352" x2="392" y2="352" stroke="#9aa6b8" marker-end="url(#aG)"/>
+          <!-- MCP -> ClickHouse ONLY : 592 -> 750 -->
+          <line x1="592" y1="108" x2="750" y2="112" stroke="#faff69" marker-end="url(#aY)"/>
+          <!-- Next -> ClickHouse (live /explore) : 592 -> CH lower-left 750,150 -->
+          <line x1="592" y1="326" x2="750" y2="152" stroke="#faff69" marker-end="url(#aY)"/>
+          <!-- Next -> Neon : 592 -> 750 -->
+          <line x1="592" y1="352" x2="750" y2="352" stroke="#5cc8ff" marker-end="url(#aB)"/>
+        </g>
+
+        <!-- nodes -->
+        <g font-family="ui-sans-serif,Segoe UI,Roboto,sans-serif">
+          <!-- AI -->
+          <rect x="22" y="64" width="200" height="88" rx="14" fill="#161c28" stroke="#2c3647"/>
+          <text x="122" y="106" font-size="32" text-anchor="middle">🤖</text>
+          <text x="122" y="138" fill="#f2f5f9" font-size="20" font-weight="700" text-anchor="middle">Any AI client</text>
+          <!-- Browser -->
+          <rect x="22" y="308" width="200" height="88" rx="14" fill="#161c28" stroke="#2c3647"/>
+          <text x="122" y="350" font-size="32" text-anchor="middle">🌐</text>
+          <text x="122" y="382" fill="#f2f5f9" font-size="20" font-weight="700" text-anchor="middle">Browser</text>
+          <!-- MCP -->
+          <rect x="392" y="64" width="200" height="88" rx="14" fill="#161c28" stroke="#2c3647"/>
+          <text x="492" y="104" font-size="30" text-anchor="middle">🔌</text>
+          <text x="492" y="135" fill="#f2f5f9" font-size="19" font-weight="700" text-anchor="middle">MCP server</text>
+          <!-- Next -->
+          <rect x="392" y="308" width="200" height="88" rx="14" fill="#161c28" stroke="#2c3647"/>
+          <text x="492" y="348" font-size="28" text-anchor="middle">▲</text>
+          <text x="492" y="379" fill="#f2f5f9" font-size="19" font-weight="700" text-anchor="middle">Next.js · Vercel</text>
+          <!-- ClickHouse -->
+          <rect x="750" y="54" width="234" height="112" rx="16" fill="#1c1a08" stroke="#5c5a16"/>
+          <text x="867" y="98" font-size="32" text-anchor="middle">⚡</text>
+          <text x="867" y="128" fill="#faff69" font-size="22" font-weight="800" text-anchor="middle">ClickHouse</text>
+          <text x="867" y="149" fill="#9aa6b8" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.4">OLAP · LIVE AGGREGATION</text>
+          <!-- Neon -->
+          <rect x="750" y="298" width="234" height="112" rx="16" fill="#0e1a27" stroke="#23506e"/>
+          <text x="867" y="342" font-size="32" text-anchor="middle">🐘</text>
+          <text x="867" y="372" fill="#5cc8ff" font-size="22" font-weight="800" text-anchor="middle">Neon Postgres</text>
+          <text x="867" y="393" fill="#9aa6b8" font-size="13" font-weight="700" text-anchor="middle" letter-spacing="1.4">OLTP · FAST LOOKUPS</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="foot">
+      <div class="logos"><b>ClickHouse</b><span>·</span><b>Neon</b><span>·</span><b>MCP</b><span>·</span><b>Next.js</b><span>·</span><b>Vercel</b></div>
+      <div class="data">CMS Open Payments × Medicare Part D, 2024<br><b>6M payments · 2M prescriptions · 642K doctors</b></div>
+    </div>
+  </div>
+</body>
+</html>
