@@ -1,7 +1,7 @@
 -- 05_per_npi_export.sql
 -- One row per (drug_key, NPI): the prescriber, their claims, specialty, and how much
 -- drug-specific payment they got ($0 if none). This is the dataframe the Python
--- significance cell consumes (paste into a Hex SQL cell named e.g. `per_npi`).
+-- significance script consumes.
 
 SELECT
     r.drug_key,

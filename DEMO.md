@@ -84,7 +84,7 @@ CMS APIs ──pull/filter──► ClickHouse Cloud (OLAP)
                               rx.partd_raw, rx.payments_raw
                               rx.rx_by_npi_drug, rx.pay_by_npi_drug
                                      │
-                              Hex notebook (SQL + Python regression + charts + NL→SQL)
+                              Python analysis (SQL + regression + charts)
                                      ▲
 Postgres (OLTP) ──watermark CDC──────┘
   drug_review watchlist ──pipe_pg_to_ch.py──► rx.review_events
@@ -95,7 +95,7 @@ Postgres (OLTP) ──watermark CDC──────┘
   with the top 40 paid-prescriber outliers). Analysts change a row's status; our
   `pipe_pg_to_ch.py` watermark-CDC streams only the changed rows into ClickHouse
   `review_events`. **Live demo:** edit a status in Postgres → run the pipe → it appears in CH.
-- **GenAI bonus:** natural-language → SQL in Hex (3 canned questions in `hex/nl_questions.md`).
+- **GenAI:** natural-language → SQL over the schema (now the public MCP server — see `mcp/` and the `/mcp` page).
 
 ---
 
@@ -139,9 +139,8 @@ docker start rxpg 2>/dev/null; docker ps | grep rxpg
 python3 scripts/pipe_pg_to_ch.py
 ```
 
-- Confirm Hex's ClickHouse connection still tests green (re-add Hex's egress IP to the CH
-  **IP Access List** if it changed, or set allow-anywhere for the demo).
-- Have `hex/cells.md` open as your backup if a cell needs re-pasting.
+- Confirm the ClickHouse connection tests green (set allow-anywhere on the CH **IP Access List**
+  for the demo if the egress IP changed).
 
 ---
 
@@ -166,7 +165,6 @@ python3 scripts/pipe_pg_to_ch.py
 ## Live OLTP demo — exact commands
 
 ```bash
-# show current queue state in ClickHouse (run the review_queue Hex cell, or:)
 # flag/escalate a row in Postgres:
 docker exec rxpg psql -U postgres -c \
   "UPDATE drug_review SET status='escalated', assigned_to='you' \
@@ -175,5 +173,5 @@ docker exec rxpg psql -U postgres -c \
 # stream the change into ClickHouse:
 python3 scripts/pipe_pg_to_ch.py
 
-# re-run the review_queue cell in Hex -> status flipped to 'escalated'
+# re-query rx.review_events in ClickHouse -> status flipped to 'escalated'
 ```
